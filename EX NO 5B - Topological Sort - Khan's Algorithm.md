@@ -1,33 +1,28 @@
 
-# EX 5B Topological Sort - Khan's Algorithm
+# EX 5C Graph coloring
 
 ## AIM:
 To write a Java program to for given constraints.
-
-A software development team is preparing for a product release. The release consists of multiple tasks, each dependent on other tasks being completed first. You are to determine a valid order in which all tasks can be completed. If it's not possible due to cyclic dependencies, output that the release cannot be scheduled.
-
-
-
+Problem Description:
+In a hilly region, several radio towers are installed to provide communication services. However, due to signal interference, two adjacent towers (i.e., in communication range of each other) must not use the same frequency channel.
 
 ## Algorithm
 1. Input & Graph Construction:
-Read number of tasks n and dependencies m.
-Build an adjacency list where b → a means task a depends on b.
-Maintain an indegree array to count how many prerequisites each task has
-2. Initialize the Queue:
-Add all tasks with indegree = 0 (no dependencies) to a queue — these can be executed first.
-3. Process Tasks (Topological Sort):
-While the queue is not empty:
-Remove a task from the queue and add it to the final order list.
-For each dependent task, decrease its indegree by 1.
-If any dependent task’s indegree becomes 0, add it to the queue.
-4.  Cycle Detection:
-After processing, if the total tasks in the order list ≠ n,
-→ a cycle exists (some tasks depend on each other),
-→ output: “Release cannot be scheduled.”
-5. Output:
-If no cycle is detected, print the tasks in the valid topological order,
-representing a feasible schedule of task execution.  
+Read number of towers n, available channels m, and connections e.
+Build an adjacency list representing connections between towers (edges).
+2. Color Representation:
+Create a color[] array where color[i] stores the assigned channel for tower i.
+Initially, all towers are uncolored (0).
+3. Recursive Backtracking (isColorable):
+For each tower (node), try assigning channels (colors) from 1 to m.
+Before assigning, check if the channel is safe using the isSafe() function.
+4. Safety Check (isSafe):
+Ensure no adjacent (connected) tower has the same channel.
+If safe, assign the channel and recursively color the next tower.
+If no valid channel exists, backtrack by resetting the color. 
+5. Result:
+If all towers can be assigned valid channels → print "YES".
+Otherwise → print "NO" (conflict in channel assignment).  
 
 ## Program:
 ```
@@ -36,80 +31,67 @@ Developed by: GOKHULRAJ V
 Register Number:212223230064
 import java.util.*;
 
-public class prog {
+public class RadioTowerChannelAssignment {
 
-    public static List<Integer> findTaskOrder(int n, int[][] dependencies) {
-       
-        List<List<Integer>> adj = new ArrayList<>();
-        for (int i = 0; i < n; i++) {
-            adj.add(new ArrayList<>());
-        }
-
-        int[] indegree = new int[n];
-
-       
-        for (int[] dep : dependencies) {
-            int a = dep[0];
-            int b = dep[1];
-            adj.get(b).add(a); 
-            indegree[a]++;
-        }
-
-        
-        Queue<Integer> queue = new LinkedList<>();
-        for (int i = 0; i < n; i++) {
-            if (indegree[i] == 0)
-                queue.add(i);
-        }
-
-        List<Integer> order = new ArrayList<>();
-
-      
-        while (!queue.isEmpty()) {
-            int task = queue.poll();
-            order.add(task);
-
-            for (int next : adj.get(task)) {
-                indegree[next]--;
-                if (indegree[next] == 0)
-                    queue.add(next);
+    
+    public static boolean isSafe(List<List<Integer>> graph, int[] color, int node, int c) {
+        for (int neighbour : graph.get(node)) {
+            if (color[neighbour] == c) {
+                return false; 
             }
         }
+        return true;
+    }
 
-      
-        if (order.size() != n)
-            return null;
+    
+    public static boolean isColorable(List<List<Integer>> graph, int[] color, int node, int m, int n) {
+        if (node == n) return true; 
 
-        return order;
+       
+        for (int c = 1; c <= m; c++) {
+            if (isSafe(graph, color, node, c)) {
+                color[node] = c; 
+                if (isColorable(graph, color, node + 1, m, n))
+                    return true;
+                color[node] = 0; 
+            }
+        }
+        return false; 
     }
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         int n = sc.nextInt(); 
         int m = sc.nextInt(); 
-        int[][] dependencies = new int[m][2];
-        for (int i = 0; i < m; i++) {
-            dependencies[i][0] = sc.nextInt(); 
-            dependencies[i][1] = sc.nextInt(); 
+        int e = sc.nextInt();
+
+        List<List<Integer>> graph = new ArrayList<>();
+        for (int i = 0; i < n; i++)
+            graph.add(new ArrayList<>());
+
+        for (int i = 0; i < e; i++) {
+            int u = sc.nextInt();
+            int v = sc.nextInt();
+            graph.get(u).add(v);
+            graph.get(v).add(u);
         }
 
-        List<Integer> result = findTaskOrder(n, dependencies);
+        int[] color = new int[n];
 
-        if (result == null) {
-            System.out.println("Release cannot be scheduled");
-        } else {
-            for (int task : result) {
-                System.out.print(task + " ");
-            }
-        }
+        if (isColorable(graph, color, 0, m, n))
+            System.out.println("YES");
+        else
+            System.out.println("NO");
+
+        sc.close();
     }
 }
-
+ 
 ```
 
 ## Output:
+<img width="411" height="491" alt="image" src="https://github.com/user-attachments/assets/80a5bcb4-a0bb-44f6-a6e4-0c389e78284c" />
 
-<img width="732" height="532" alt="image" src="https://github.com/user-attachments/assets/1fd0a1e3-31df-4c30-ae4c-30a7d4971aae" />
 
 
 ## Result:
